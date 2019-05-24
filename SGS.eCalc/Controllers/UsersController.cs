@@ -13,7 +13,7 @@ using SGS.eCalc.Repository;
 namespace SGS.eCalc.Controllers
 {
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase

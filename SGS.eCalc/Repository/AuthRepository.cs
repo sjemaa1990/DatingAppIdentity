@@ -19,8 +19,8 @@ namespace SGS.eCalc.Repository
             var currentUser = await _context.Users.Include(p => p.Photos).FirstOrDefaultAsync(u => u.UserName == username);
             if (currentUser == null) return null;
 
-            if(!VerifyPasswordHash(password,currentUser.PasswordHash,currentUser.PasswordSalt ))
-            return null;
+            // if(!VerifyPasswordHash(password,currentUser.PasswordHash,currentUser.PasswordSalt ))
+            // return null;
 
             return currentUser;
         }
@@ -43,8 +43,8 @@ namespace SGS.eCalc.Repository
             byte[] passwordSalt, passwordHash;
 
             CreatePasswordHash(password, out passwordHash, out passwordSalt);
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+            // user.PasswordHash = passwordHash;
+            // user.PasswordSalt = passwordSalt;
             await _context.AddAsync(user);
             await _context.SaveChangesAsync();
             return user;

@@ -10,7 +10,6 @@ using SGS.eCalc.Models;
 
 namespace SGS.eCalc.API.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
@@ -23,7 +22,7 @@ namespace SGS.eCalc.API.Controllers
 
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -31,7 +30,7 @@ namespace SGS.eCalc.API.Controllers
             return  Ok( await _context.CalculationVersions.ToListAsync());
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Member")]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {

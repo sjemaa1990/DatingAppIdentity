@@ -16,7 +16,7 @@ using SGS.eCalc.Repository;
 
 namespace SGS.eCalc.Controllers
 {
-    [Authorize]
+    //[Authorize]  replaced by startup configuration 
     [Route("api/users/{userId}/photos")]
     [ApiController]
     public class PhotosController : ControllerBase

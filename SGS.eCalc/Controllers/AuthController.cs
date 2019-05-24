@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SGS.eCalc.DTO;
@@ -14,49 +17,80 @@ using SGS.eCalc.Repository;
 
 namespace SGS.eCalc.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
-        public AuthController(IAuthRepository authRepository, IConfiguration config, IMapper mapper)
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+
+        public AuthController(IConfiguration config,
+                                 IMapper mapper, 
+                                 UserManager<User> userManager,
+                                 SignInManager<User> signInManager)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
             _mapper = mapper;
-            _authRepository = authRepository;
             _config = config;
         }
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegisterDTO userForRegister)
         {
-
-
-            userForRegister.UserName = userForRegister.UserName.ToLower();
-            if (await _authRepository.UserExists(userForRegister.UserName))
-                return BadRequest("User already exist");
-
             var userToCreate = _mapper.Map<User>(userForRegister);
+            var result = await _userManager.CreateAsync(userToCreate, userForRegister.Password);
+            
+            var userToReturn = _mapper.Map<UserForDetailedDto>(userToCreate);
 
-            var createdUser = await _authRepository.Register(userToCreate, userForRegister.Password);
-            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
-
-            // Name of route
-            return CreatedAtRoute("GetUser", new {Controller = "Users", id=createdUser.Id}, userToReturn);
+            if(result.Succeeded)
+            {
+                // Name of route
+            return CreatedAtRoute("GetUser", new { Controller = "Users", id = userToCreate.Id }, userToReturn);
+            }
+            return BadRequest(result.Errors);
         }
         [HttpPost("login")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> Login(UserLoginDTO userLoginDTO)
         {
 
-            var userFromRepository = await _authRepository.Login(userLoginDTO.UserName.ToLower(), userLoginDTO.Password);
-            if (userFromRepository == null)
-                return Unauthorized();
+            //var userFromRepository = await _authRepository.Login(userLoginDTO.UserName.ToLower(), userLoginDTO.Password);
 
-            var claims = new[]{
-                    new Claim(ClaimTypes.NameIdentifier, userFromRepository.Id.ToString()),
-                    new Claim(ClaimTypes.Name, userFromRepository.UserName)
+            var user = await _userManager.FindByNameAsync(userLoginDTO.UserName);
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user,userLoginDTO.Password,false);
+
+            if (result.Succeeded)
+            {
+                 var appUser = await _userManager.Users.Include(p => p.Photos)
+                                                        .FirstOrDefaultAsync(u => u.NormalizedUserName == userLoginDTO.UserName.ToUpper());
+                 var userToReturn =  _mapper.Map<UserForListDTO>(appUser);
+                 return Ok(new
+                    {
+                        Token = GenerateJwtToken(appUser),
+                        User = userToReturn
+                    });
+            }
+            return Unauthorized();
+
+        }
+
+        private async Task<string> GenerateJwtToken(User user)
+        {
+            var claims = new List<Claim>{
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName)
                 };
+            var roles = await _userManager.GetRolesAsync(user);
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
@@ -71,15 +105,7 @@ namespace SGS.eCalc.Controllers
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            var user = _mapper.Map<UserForListDTO>(userFromRepository);
-
-                return Ok(new
-                {
-                    Token = tokenHandler.WriteToken(token),
-                    User = user
-                });
-
+            return tokenHandler.WriteToken(token);
         }
     }
 }
