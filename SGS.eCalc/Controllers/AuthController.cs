@@ -70,7 +70,7 @@ namespace SGS.eCalc.Controllers
                  var userToReturn =  _mapper.Map<UserForListDTO>(appUser);
                  return Ok(new
                     {
-                        Token = GenerateJwtToken(appUser),
+                        Token = GenerateJwtToken(appUser).Result,
                         User = userToReturn
                     });
             }

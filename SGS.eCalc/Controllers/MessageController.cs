@@ -17,7 +17,7 @@ using SGS.eCalc.Repository;
 namespace SGS.eCalc.Controllers
 {
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
+    //[Authorize]  replaced by startup configuration 
     [Route("api/users/{userId}/[controller]")]
     [ApiController]
     public class MessageController : ControllerBase

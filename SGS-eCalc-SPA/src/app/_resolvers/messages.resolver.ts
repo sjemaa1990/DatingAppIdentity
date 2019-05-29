@@ -11,11 +11,12 @@ import { AuthService } from 'src/app/_services/auth.service';
 export class MessagesResolver implements Resolve <Message[]> {
     pageNumber = 1;
     pageSize = 5;
-    messageContainer ='Unread';
-    constructor(private authService: AuthService, private userService: UserService, private router: Router, private alertify: AlertifyService) {}
+    messageContainer = 'Unread';
+    constructor(private authService: AuthService, private userService: UserService,
+         private router: Router, private alertify: AlertifyService) {}
     // automaticlly  subscribed, because we use a resolver
     resolve(route: ActivatedRouteSnapshot): Observable<Message[]> {
-        return this.userService.getMessages(this.authService.decodedToken.nameid, this.pageNumber, this.pageSize, 
+        return this.userService.getMessages(this.authService.decodedToken.nameid, this.pageNumber, this.pageSize,
         this.messageContainer).pipe(
             catchError(error => {
                 this.alertify.error('Problem when retrieving messages');
