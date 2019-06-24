@@ -10,6 +10,7 @@ namespace SGS.eCalc.Models
         public string Description { get; set; }
         public DateTime AddedDate { get; set; }
         public bool IsMain { get; set; }
+        public bool IsApproved { get; set; }
         public string PublicId { get; set; }
 
         public User User { get; set; }

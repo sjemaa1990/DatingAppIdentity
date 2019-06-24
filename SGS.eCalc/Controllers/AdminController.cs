@@ -67,8 +67,12 @@ namespace SGS.eCalc.Controllers
         [HttpGet("getPhotosForModeration")]
         public async Task<IActionResult> GetPhotosForModeration()
         {
+            var photosForModeration = await (from photo in _context.Photos
+                                            where photo.IsApproved == false
+                                            select photo).ToListAsync();
 
-            return Ok("admin or moderator can see this");
+            return Ok(photosForModeration);
+
         }
     }
 }
