@@ -10,6 +10,7 @@ namespace SGS.eCalc.DTO
         public string Description { get; set; }
         public DateTime AddedDate { get; set; }
         public bool IsMain { get; set; }
+        public string IsApproved { get; set; }
 
     }
 }

@@ -23,4 +23,7 @@ export class PhotoManagmentComponent implements OnInit {
       this.alertfy.error(error);
     });
   }
+  setAsApproved (photoId: number) {
+
+  }
 }

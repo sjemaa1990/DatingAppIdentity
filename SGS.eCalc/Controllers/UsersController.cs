@@ -50,7 +50,8 @@ namespace SGS.eCalc.Controllers
         [HttpGet("{id}", Name ="GetUser")]
         public async Task<IActionResult> GetUser(int id)
         {
-            return Ok( _mapper.Map<UserForDetailedDto>(await _datingRepository.GetUser(id)));
+            var result =   _mapper.Map<UserForDetailedDto>(await _datingRepository.GetUser(id));
+            return Ok(result);
         }
 
         [HttpPut("{id}")]

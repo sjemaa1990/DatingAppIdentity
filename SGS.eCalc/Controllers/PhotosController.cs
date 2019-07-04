@@ -146,6 +146,29 @@ namespace SGS.eCalc.Controllers
              return BadRequest("Failed to delete the photo");
         }
 
+        [HttpPost("{id}/setMain")]
+        public async Task<IActionResult> Approve(int userId, int id){
+            if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var userFromRepo = await _datingRepository.GetUser(userId);
+            if (!userFromRepo.Photos.Any(p => p.Id == id))
+             return Unauthorized();
+
+             var photoFromRepo = userFromRepo.Photos.FirstOrDefault(p => p.Id == id);
+            if(photoFromRepo.IsMain)
+             return BadRequest("This already the main photo");
+
+             var currenMainPhoto = userFromRepo.Photos.FirstOrDefault(p => p.IsMain);
+
+             currenMainPhoto.IsMain = false;
+             photoFromRepo.IsMain = true;
+             if(await _datingRepository.SaveAll())
+                 return NoContent();
+
+             return BadRequest("Could not set photo to main");
+        }
+
 
     }
 }

@@ -27,6 +27,8 @@ using SGS.eCalc.Data;
 using SGS.eCalc.Helpers;
 using SGS.eCalc.Models;
 using SGS.eCalc.Repository;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace SGS.eCalc.API
 {
@@ -90,6 +92,14 @@ namespace SGS.eCalc.API
             .AddJsonOptions(opt => {
                 opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+                //c.RoutePrefix = string.Empty;
+            });
+
+
             services.AddCors();
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             // to reset datacontext object 
